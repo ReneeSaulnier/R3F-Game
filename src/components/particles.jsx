@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import "../App.css";
 
 export default function Particles() {
 
-      /**
+  /**
    * Particles
    */
   const particlesGeometry = new THREE.BufferGeometry();

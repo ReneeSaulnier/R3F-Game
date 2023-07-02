@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import "../App.css";
 import Spaceship from "./spaceship";
 import Particles from "./particles";
+import Laser from "./laser";
 
 const Experience = () => {
   /**
@@ -22,7 +23,10 @@ const Experience = () => {
     >
       <Canvas>
         <Particles />
-        <Spaceship />
+        <group>
+          <Spaceship />
+          <Laser />
+        </group>
         <OrbitControls />
       </Canvas>
     </div>

@@ -95,36 +95,34 @@ useFrame(() => {
   });
 
 
-  /**
-   * Mouse movements
-   */
+//   /**
+//    * Mouse movements
+//    */
 
-  const [mouseMovement, setMouseMovement] = useState({ x: 0, y: 0 });
-  const onMouseMove = (event) => {
-    const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-    setMouseMovement({ x: movementX, y: movementY });
-  };
+//   const [mouseMovement, setMouseMovement] = useState({ x: 0, y: 0 });
+//   const onMouseMove = (event) => {
+//     const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+//     const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+//     setMouseMovement({ x: movementX, y: movementY });
+//   };
 
-  useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-    };
-  }, []);
+//   useEffect(() => {
+//     window.addEventListener("mousemove", onMouseMove);
+//     return () => {
+//       window.removeEventListener("mousemove", onMouseMove);
+//     };
+//   }, []);
 
-  useFrame(() => {
-  const controls = controlsRef.current;
-  if (controls && controls.isLocked) {
-    const { x, y } = mouseMovement;
-    const rotationSpeed = 0.002;
-    controlsRef.current.getObject().rotation.y -= x * rotationSpeed;
-    controlsRef.current.getObject().rotation.x -= y * rotationSpeed;
-    setMouseMovement({ x: 0, y: 0 }); // Reset mouse movement
-  }
-});
-
-
+//   useFrame(() => {
+//   const controls = controlsRef.current;
+//   if (controls && controls.isLocked) {
+//     const { x, y } = mouseMovement;
+//     const rotationSpeed = 0.002;
+//     controlsRef.current.getObject().rotation.y -= x * rotationSpeed;
+//     controlsRef.current.getObject().rotation.x -= y * rotationSpeed;
+//     setMouseMovement({ x: 0, y: 0 }); // Reset mouse movement
+//   }
+// });
 
   return (
     <>
