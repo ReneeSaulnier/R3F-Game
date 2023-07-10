@@ -126,8 +126,6 @@ useFrame(() => {
 
   return (
     <>
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
         {model && (
           <primitive
             object={model.scene}

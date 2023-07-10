@@ -1,62 +1,60 @@
 import React, { useEffect, useRef } from "react";
-import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
-export default function Laser() {
-    //Arrtibutes of the laser
-    const count = 20;
-    const radiusTop = 0.05;
-    const radiusBottom = 0.05;
-    const height = 1;
-    const radialSegments = 8;
-    const heightSegments = 1;
-    const openEnded = false;
-    const thetaStart = 0;
-    const thetaLength = Math.PI;
+function Cylinder() {
+  const meshes = useRef([]);
+  const count = 30;
+  const positions = useRef([]);
 
-    const laserGeometry = new THREE.CylinderGeometry(
-        radiusTop,
-        radiusBottom,
-        height,
-        radialSegments,
-        heightSegments,
-        openEnded,
-        thetaStart,
-        thetaLength
-    );
-    const positions = new Float32Array(count * 3);
-
-    for (let i = 0; i < count * 3; i++) {
-        positions[i] = (Math.random() - 0.5) * 10;
+  useEffect(() => {
+    const newPositions = [];
+    for (let i = 0; i < count; i++) {
+      const x = (Math.random() - 0.5) * 10;
+      const y = (Math.random() - 0.5) * 10;
+      const z = (Math.random() - 0.5) * 10;
+      newPositions.push({ x, y, z });
     }
+    positions.current = newPositions;
+  }, []);
 
-    laserGeometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(positions, 3)
-    );
-
-    const laserRef = useRef();
-    useFrame(() => {
-        const positions = laserGeometry.attributes.position.array;
-        for (let i = 0; i < count * 3; i += 3) {
-            positions[i + 2] += 0.1;
-            if (positions[i + 2] > 10) {
-                positions[i + 2] = -3;
-            }
+  useFrame(() => {
+    for (let i = 0; i < meshes.current.length; i++) {
+      const mesh = meshes.current[i];
+      const position = positions.current[i];
+        //This makes the laser appear and disappear
+        mesh.position.z += 0.1;
+        //This makes the laser grow
+        mesh.scale.y += 0.05;
+        //This makes the laser roate to face the spaceship
+        mesh.rotation.x = Math.PI / 1.8;
+        //Controls how the laser reacts when it hits the end of the screen
+        if (mesh.position.z > 5) {
+            mesh.position.z = -7;
+            mesh.scale.y = 0.05;
+            mesh.material.opacity = 0;
         }
-        laserGeometry.attributes.position.needsUpdate = true;
-    });
+            position.z += 0.1;
+        if (position.z > 10) {
+            position.z = -3;
+         }
+
+      mesh.position.set(position.x, position.y, position.z);
+    }
+  });
 
   return (
-    <points>
-        <bufferGeometry attach="geometry" {...laserGeometry} />
-        <pointsMaterial
-            attach="material"
-            color="red"
-            size={0.15}
-            sizeAttenuation
-        />
-    </points>
+    <group>
+      {Array.from({ length: count }).map((_, index) => (
+        <mesh key={index} ref={(ref) => (meshes.current[index] = ref)} scale={0.03}>
+          <cylinderGeometry attach="geometry" args={[1, 1, 1, 32]} />
+          <meshStandardMaterial attach="material" color="red" />
+        </mesh>
+      ))}
+    </group>
   );
 }
+
+export default Cylinder;
+
 
