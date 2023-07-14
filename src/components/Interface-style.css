@@ -1,0 +1,21 @@
+.interface{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    font-family: 'Bebas Neue', cursive;
+}
+
+.time {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    width: 100%;
+    color: 'red';
+    font-size: 6vh;
+    background: 'blue';
+    padding-top: 5px;
+    text-align: center;
+}

@@ -5,20 +5,14 @@ import { useGLTF } from "@react-three/drei";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 
 export default function Spaceship() {
-  /**
-   * Load Model
-   */
   const model = useGLTF("./models/model.gltf");
-
-  /**
-   * Create a reference for the spaceship so we can keep updating it
-   */
+  const rock = useGLTF("./models/rock.gltf");
   const spaceshipRef = useRef();
   const controlsRef = useRef();
+  const laserSpeed = 1;
+  const laserMaxDistance = 30;
+  const [activeLasers, setActiveLasers] = useState([]);
 
-  /**
-   * Pointer Lock Controls for the spaceship
-   */
   useEffect(() => {
     const camera = new THREE.PerspectiveCamera();
     const controls = new PointerLockControls(camera, document.body);
@@ -28,22 +22,19 @@ export default function Spaceship() {
     const onKeyDown = (event) => {
       const { key } = event;
       if (key === "w") {
-        //Setting the state to forward
         controls.moveUpState = "UP";
-        //Making the soaceship rotate in the direction it is moving
-        spaceshipRef.current.rotation.x = Math.max(spaceshipRef.current.rotation.x - 0.1, -0.3);
       }
       if (key === "s") {
         controls.moveUpState = "DOWN";
-        spaceshipRef.current.rotation.x = Math.min(spaceshipRef.current.rotation.x + 0.1, 0.3);
       }
       if (key === "a") {
         controls.moveRightState = "LEFT";
-        spaceshipRef.current.rotation.z = Math.min(spaceshipRef.current.rotation.z + 0.1, 0.3);
       }
       if (key === "d") {
         controls.moveRightState = "RIGHT";
-        spaceshipRef.current.rotation.z = Math.max(spaceshipRef.current.rotation.z - 0.1, -0.1);
+      }
+      if (key === " ") {
+        fireLaser();
       }
     };
     const onKeyUp = (event) => {
@@ -67,18 +58,16 @@ export default function Spaceship() {
     };
   }, []);
 
-useFrame(() => {
-  const spaceship = spaceshipRef.current;
-  // Access the PointerLockControls instance
-  const controls = controlsRef.current;
-  // Check for pressed keys and update movement
-  if (controls && controls.isLocked) {
-      const direction = controls.getDirection(new THREE.Vector3());
-      const up = new THREE.Vector3(0, 1, 0);
-      const right = new THREE.Vector3();
-      right.crossVectors(direction, up).normalize();
+  useFrame(() => {
+    const spaceship = spaceshipRef.current;
+    const controls = controlsRef.current;
 
-      const moveSpeed = 0.1;
+    if (controls && controls.isLocked) {
+      const direction = new THREE.Vector3();
+      spaceship.getWorldDirection(direction);
+
+      const moveSpeed = 0.2;
+
       if (controls.moveUpState === "UP") {
         spaceship.position.add(new THREE.Vector3(0, moveSpeed, 0));
       }
@@ -86,55 +75,89 @@ useFrame(() => {
         spaceship.position.add(new THREE.Vector3(0, -moveSpeed, 0));
       }
       if (controls.moveRightState === "RIGHT") {
-        spaceship.position.add(right.clone().multiplyScalar(moveSpeed));
+        const spaceshipRight = new THREE.Vector3().crossVectors(
+          direction,
+          new THREE.Vector3(0, 1, 0)
+        ).normalize();
+        spaceship.position.add(spaceshipRight.multiplyScalar(moveSpeed));
       }
       if (controls.moveRightState === "LEFT") {
-        spaceship.position.add(right.clone().multiplyScalar(-moveSpeed));
+        const spaceshipRight = new THREE.Vector3().crossVectors(
+          direction,
+          new THREE.Vector3(0, 1, 0)
+        ).normalize();
+        spaceship.position.sub(spaceshipRight.multiplyScalar(moveSpeed));
       }
+
+      const updatedLasers = activeLasers.filter((laser) => {
+        const newPosition = laser.position.clone().add(
+          direction.clone().multiplyScalar(laserSpeed)
+        );
+        const distance = spaceship.position.distanceTo(newPosition);
+
+        if (distance > laserMaxDistance) {
+          return false;
+        }
+
+        laser.position.copy(newPosition);
+        checkCollision(laser); // Check collision with rock
+        return true;
+      });
+
+      setActiveLasers(updatedLasers);
     }
   });
 
+  const checkCollision = (laser) => {
+    const laserRaycaster = new THREE.Raycaster();
+    laserRaycaster.set(laser.position, laser.getWorldDirection(new THREE.Vector3()));
+    const intersects = laserRaycaster.intersectObject(rock.scene, true);
+    if (intersects.length > 0) {
+      rock.scene.visible = false;
+    }
+  };
 
-//   /**
-//    * Mouse movements
-//    */
+  const fireLaser = () => {
+    const spaceship = spaceshipRef.current;
+    const controls = controlsRef.current;
+    const direction = new THREE.Vector3();
+    spaceship.getWorldDirection(direction);
 
-//   const [mouseMovement, setMouseMovement] = useState({ x: 0, y: 0 });
-//   const onMouseMove = (event) => {
-//     const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-//     const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-//     setMouseMovement({ x: movementX, y: movementY });
-//   };
+    const laserGeometry = new THREE.BoxGeometry(0.1, 0.1, 1);
+    const laserMaterial = new THREE.MeshBasicMaterial({ color: "red" });
+    const laserMesh = new THREE.Mesh(laserGeometry, laserMaterial);
+    laserMesh.position.copy(spaceship.position);
 
-//   useEffect(() => {
-//     window.addEventListener("mousemove", onMouseMove);
-//     return () => {
-//       window.removeEventListener("mousemove", onMouseMove);
-//     };
-//   }, []);
+    setActiveLasers((prevLasers) => [...prevLasers, laserMesh]);
 
-//   useFrame(() => {
-//   const controls = controlsRef.current;
-//   if (controls && controls.isLocked) {
-//     const { x, y } = mouseMovement;
-//     const rotationSpeed = 0.002;
-//     controlsRef.current.getObject().rotation.y -= x * rotationSpeed;
-//     controlsRef.current.getObject().rotation.x -= y * rotationSpeed;
-//     setMouseMovement({ x: 0, y: 0 }); // Reset mouse movement
-//   }
-// });
+    if (!controls.isLocked) {
+      controls.lock();
+    }
+  };
 
   return (
     <>
-        {model && (
+      {model && (
+        <>
           <primitive
             object={model.scene}
             ref={spaceshipRef}
-            position={[0, -1, 0.3]}
+            position={[0, -1, 0]}
             rotation={[-0.15, Math.PI, 0]}
-            scale={ 0.6 }
+            scale={0.5}
           />
-        )}
+          {activeLasers.map((laser, index) => (
+            <mesh key={index} position={laser.position}>
+              <primitive object={laser} />
+            </mesh>
+          ))}
+          {rock && (
+            <mesh position={[0, 0, -10]}>
+              <primitive object={rock.scene} scale={0.5} />
+            </mesh>
+          )}
+        </>
+      )} 
     </>
   );
 }

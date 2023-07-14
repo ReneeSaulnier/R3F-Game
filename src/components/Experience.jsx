@@ -1,10 +1,11 @@
-import React, { useRef } from "react";
+import React,  { Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { Physics } from "@react-three/cannon";
 import "../App.css";
 import Spaceship from "./spaceship";
 import Particles from "./particles";
-import Laser from "./laser";
+// import Laser from "./laser";
 
 const Experience = () => {
   /**
@@ -26,8 +27,12 @@ const Experience = () => {
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <Particles />
         <group>
-          <Spaceship />
-          <Laser />
+          <Suspense>
+            <Physics>
+              <Spaceship />
+              {/* <Laser /> */}
+            </Physics>
+          </Suspense>
         </group>
         <OrbitControls />
       </Canvas>

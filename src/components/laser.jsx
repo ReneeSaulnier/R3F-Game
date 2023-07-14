@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+import { useBox, Physics } from "@react-three/cannon";
 
 function Cylinder() {
   const meshes = useRef([]);
-  const count = 30;
+  const count = 100;
   const positions = useRef([]);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ function Cylinder() {
         mesh.rotation.x = Math.PI / 1.8;
         //Controls how the laser reacts when it hits the end of the screen
         if (mesh.position.z > 5) {
-            mesh.position.z = -7;
+            mesh.position.z = -6;
             mesh.scale.y = 0.05;
             mesh.material.opacity = 0;
         }
@@ -43,15 +43,25 @@ function Cylinder() {
     }
   });
 
+  const [laserColliderRef, laserColliderApi] = useBox(() => ({
+    args: [1, 1, 1],
+    collisionFilterGroup: 1,
+    collisionFilterMask: 2,
+    onCollide: (e) => {
+      console.log("Laser collided");
+    },
+  }));
+
   return (
-    <group>
-      {Array.from({ length: count }).map((_, index) => (
-        <mesh key={index} ref={(ref) => (meshes.current[index] = ref)} scale={0.03}>
-          <cylinderGeometry attach="geometry" args={[1, 1, 1, 32]} />
-          <meshStandardMaterial attach="material" color="red" />
-        </mesh>
-      ))}
-    </group>
+    <Physics>
+        {Array.from({ length: count }).map((_, index) => (
+          <mesh key={index} ref={(ref) => (meshes.current[index] = ref)} scale={0.03}>
+            <cylinderGeometry attach="geometry" args={[1, 1, 1, 32]} />
+            <meshStandardMaterial attach="material" color="red" />
+            <mesh ref={laserColliderRef} />
+          </mesh>
+        ))}
+    </Physics>
   );
 }
 
