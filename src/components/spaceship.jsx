@@ -4,6 +4,12 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 
+function checkBoundingBoxCollision(object1, object2) {
+  const box1 = new THREE.Box3().setFromObject(object1);
+  const box2 = new THREE.Box3().setFromObject(object2);
+  return box1.intersectsBox(box2);
+}
+
 export default function Spaceship() {
   const model = useGLTF("./models/model.gltf");
   const rock = useGLTF("./models/rock.gltf");
@@ -12,6 +18,7 @@ export default function Spaceship() {
   const laserSpeed = 1;
   const laserMaxDistance = 30;
   const [activeLasers, setActiveLasers] = useState([]);
+  const [rocks, setRocks] = useState([]);
 
   useEffect(() => {
     const camera = new THREE.PerspectiveCamera();
@@ -58,15 +65,35 @@ export default function Spaceship() {
     };
   }, []);
 
+  useEffect(() => {
+    const generateRock = [];
+    for (let i = 0; i < 10; i++) {
+      const newRock = rock.scene.clone();
+      newRock.position.x = Math.random() * 10 - 5;
+      newRock.position.y = Math.random() * 10 - 5;
+      newRock.position.z = Math.random() * 10 - 5;
+      generateRock.push(newRock);
+    }
+    setRocks(generateRock);
+  }, [rock]);
+
   useFrame(() => {
     const spaceship = spaceshipRef.current;
     const controls = controlsRef.current;
+    const moveSpeed = 0.2;
+
+    rocks.forEach((rockInstance) => {
+      rockInstance.position.z += moveSpeed;
+      rockInstance.rotation.y += 0.009;
+      rockInstance.rotation.x += 0.009;
+      if (rockInstance.position.z > 15) {
+        rockInstance.position.z = -20;
+      }
+    });
 
     if (controls && controls.isLocked) {
       const direction = new THREE.Vector3();
       spaceship.getWorldDirection(direction);
-
-      const moveSpeed = 0.2;
 
       if (controls.moveUpState === "UP") {
         spaceship.position.add(new THREE.Vector3(0, moveSpeed, 0));
@@ -90,9 +117,7 @@ export default function Spaceship() {
       }
 
       const updatedLasers = activeLasers.filter((laser) => {
-        const newPosition = laser.position.clone().add(
-          direction.clone().multiplyScalar(laserSpeed)
-        );
+        const newPosition = laser.position.clone().add(direction.clone().multiplyScalar(laserSpeed));
         const distance = spaceship.position.distanceTo(newPosition);
 
         if (distance > laserMaxDistance) {
@@ -109,11 +134,11 @@ export default function Spaceship() {
   });
 
   const checkCollision = (laser) => {
-    const laserRaycaster = new THREE.Raycaster();
-    laserRaycaster.set(laser.position, laser.getWorldDirection(new THREE.Vector3()));
-    const intersects = laserRaycaster.intersectObject(rock.scene, true);
-    if (intersects.length > 0) {
-      rock.scene.visible = false;
+    const hitRocks = rocks.filter((rockInstance) => checkBoundingBoxCollision(laser, rockInstance));
+
+    if (hitRocks.length > 0) {
+      const updatedRocks = rocks.filter((rockInstance) => !hitRocks.includes(rockInstance));
+      setRocks(updatedRocks);
     }
   };
 
@@ -151,11 +176,11 @@ export default function Spaceship() {
               <primitive object={laser} />
             </mesh>
           ))}
-          {rock && (
-            <mesh position={[0, 0, -10]}>
-              <primitive object={rock.scene} scale={0.5} />
+          {rocks.map((rockInstance, index) => (
+            <mesh key={index} position={rockInstance.position}>
+              <primitive object={rockInstance} scale={0.5} />
             </mesh>
-          )}
+          ))}
         </>
       )} 
     </>
