@@ -4,21 +4,19 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 
-function checkBoundingBoxCollision(object1, object2) {
-  const box1 = new THREE.Box3().setFromObject(object1);
-  const box2 = new THREE.Box3().setFromObject(object2);
-  return box1.intersectsBox(box2);
-}
-
 export default function Spaceship() {
   const model = useGLTF("./models/model.gltf");
   const rock = useGLTF("./models/rock.gltf");
+  const rock1 = useGLTF("./models/rock1.gltf");
+  const rock2 = useGLTF("./models/rock2.gltf");
+  const rock3 = useGLTF("./models/rock3.gltf");
   const spaceshipRef = useRef();
   const controlsRef = useRef();
   const laserSpeed = 1;
   const laserMaxDistance = 30;
   const [activeLasers, setActiveLasers] = useState([]);
-  const [rocks, setRocks] = useState([]);
+  const [rocks, setRocks] = useState([rock.scene, rock1.scene, rock2.scene, rock3.scene]);
+
 
   useEffect(() => {
     const camera = new THREE.PerspectiveCamera();
@@ -65,35 +63,15 @@ export default function Spaceship() {
     };
   }, []);
 
-  useEffect(() => {
-    const generateRock = [];
-    for (let i = 0; i < 10; i++) {
-      const newRock = rock.scene.clone();
-      newRock.position.x = Math.random() * 10 - 5;
-      newRock.position.y = Math.random() * 10 - 5;
-      newRock.position.z = Math.random() * 10 - 5;
-      generateRock.push(newRock);
-    }
-    setRocks(generateRock);
-  }, [rock]);
-
   useFrame(() => {
     const spaceship = spaceshipRef.current;
     const controls = controlsRef.current;
-    const moveSpeed = 0.2;
-
-    rocks.forEach((rockInstance) => {
-      rockInstance.position.z += moveSpeed;
-      rockInstance.rotation.y += 0.009;
-      rockInstance.rotation.x += 0.009;
-      if (rockInstance.position.z > 15) {
-        rockInstance.position.z = -20;
-      }
-    });
 
     if (controls && controls.isLocked) {
       const direction = new THREE.Vector3();
       spaceship.getWorldDirection(direction);
+
+      const moveSpeed = 0.2;
 
       if (controls.moveUpState === "UP") {
         spaceship.position.add(new THREE.Vector3(0, moveSpeed, 0));
@@ -117,7 +95,9 @@ export default function Spaceship() {
       }
 
       const updatedLasers = activeLasers.filter((laser) => {
-        const newPosition = laser.position.clone().add(direction.clone().multiplyScalar(laserSpeed));
+        const newPosition = laser.position.clone().add(
+          direction.clone().multiplyScalar(laserSpeed)
+        );
         const distance = spaceship.position.distanceTo(newPosition);
 
         if (distance > laserMaxDistance) {
@@ -131,16 +111,31 @@ export default function Spaceship() {
 
       setActiveLasers(updatedLasers);
     }
+
+    rocks.forEach((rock) => {
+      rock.position.z += 0.1;
+      rock.rotation.x += 0.01;
+      if (rock.position.z > 14) {
+        rock.position.z = -30;
+        rock.position.x = (Math.random() - 0.5) * 10;
+      }
+    }
+    );
+
   });
 
-  const checkCollision = (laser) => {
-    const hitRocks = rocks.filter((rockInstance) => checkBoundingBoxCollision(laser, rockInstance));
+const checkCollision = (laser) => {
+  const laserRaycaster = new THREE.Raycaster();
+  laserRaycaster.set(laser.position, laser.getWorldDirection(new THREE.Vector3()));
 
-    if (hitRocks.length > 0) {
-      const updatedRocks = rocks.filter((rockInstance) => !hitRocks.includes(rockInstance));
-      setRocks(updatedRocks);
-    }
-  };
+  const intersects = laserRaycaster.intersectObjects(rocks, true);
+
+  if (intersects.length > 0) {
+    const intersectedRock = intersects[0].object;
+    intersectedRock.visible = false;
+  }
+};
+
 
   const fireLaser = () => {
     const spaceship = spaceshipRef.current;
@@ -176,11 +171,29 @@ export default function Spaceship() {
               <primitive object={laser} />
             </mesh>
           ))}
-          {rocks.map((rockInstance, index) => (
-            <mesh key={index} position={rockInstance.position}>
-              <primitive object={rockInstance} scale={0.5} />
+          /**
+           * Rocks That are Flying
+           */
+          {rock && (
+            <mesh position={[0, 0, -10]}>
+              <primitive object={rock.scene} scale={0.5} />
             </mesh>
-          ))}
+          )}
+          {rock1 && (
+            <mesh position={[3, 6, -8]}>
+              <primitive object={rock1.scene} scale={0.4} />
+              </mesh>
+          )}
+          {rock2 && (
+            <mesh position={[-3, 8, -12]}>
+              <primitive object={rock2.scene} scale={0.5} />
+              </mesh>
+          )}
+          {rock3 && (
+            <mesh position={[-4, 2, -14]}>
+              <primitive object={rock3.scene} scale={0.7} />
+              </mesh>
+          )}
         </>
       )} 
     </>

@@ -2,17 +2,19 @@ import React,  { Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { Physics } from "@react-three/cannon";
+import { useRef } from "react";
 import "../App.css";
 import Spaceship from "./spaceship";
 import Particles from "./particles";
-// import Laser from "./laser";
 
 const Experience = () => {
+  const canvasRef = useRef(null);
   /**
    * Canvas
    */
   return (
     <div
+      ref={canvasRef}
       style={{
         width: "100%",
         height: "100vh",
@@ -30,7 +32,6 @@ const Experience = () => {
           <Suspense>
             <Physics>
               <Spaceship />
-              {/* <Laser /> */}
             </Physics>
           </Suspense>
         </group>
