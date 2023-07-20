@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import ReactDOM from 'react-dom/client';
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
@@ -16,7 +17,6 @@ export default function Spaceship() {
   const laserMaxDistance = 30;
   const [activeLasers, setActiveLasers] = useState([]);
   const [rocks, setRocks] = useState([rock.scene, rock1.scene, rock2.scene, rock3.scene]);
-
 
   useEffect(() => {
     const camera = new THREE.PerspectiveCamera();
@@ -105,7 +105,7 @@ export default function Spaceship() {
         }
 
         laser.position.copy(newPosition);
-        checkCollision(laser); // Check collision with rock
+        checkCollision(laser); 
         return true;
       });
 
