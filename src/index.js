@@ -5,6 +5,7 @@ import App from './App';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 
+
 const startGame = () => {
   root.render(
     <React.StrictMode>
