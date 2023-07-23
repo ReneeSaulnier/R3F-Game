@@ -8,9 +8,14 @@ export default function Particles() {
   /**
    * Particles
    */
+
+  //Creates a new buffer geometry
   const particlesGeometry = new THREE.BufferGeometry();
+  //Number of particles
   const count = 800;
+  //Creates a new array of positions (x, y, z)
   const positions = new Float32Array(count * 3);
+  //Creates a new array of movements (x, y, z)
   const movement = new Float32Array(count * 3);
   for (let i = 0; i < count * 3; i++) {
     //This creates a random position for each particle
@@ -19,6 +24,7 @@ export default function Particles() {
     movement[i] = Math.random() * 0.02 + 0.01;
 
   }
+  //Sets the position attribute to the positions array
   particlesGeometry.setAttribute(
     "position",
     new THREE.BufferAttribute(positions, 3)
@@ -48,7 +54,6 @@ const particlesRef = useRef();
             attach="material"
             color="white"
             size={0.005}
-            sizeAttenuation
             depthWrite={false}
             transparent={true}
           />

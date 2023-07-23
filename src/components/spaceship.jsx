@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import ReactDOM from 'react-dom/client';
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
@@ -106,7 +105,6 @@ export default function Spaceship() {
 
         laser.position.copy(newPosition);
         checkCollision(laser); 
-        return true;
       });
 
       setActiveLasers(updatedLasers);
