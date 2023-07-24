@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import ReactDOM from 'react-dom/client';
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
@@ -105,6 +106,7 @@ export default function Spaceship() {
 
         laser.position.copy(newPosition);
         checkCollision(laser); 
+        return true;
       });
 
       setActiveLasers(updatedLasers);
@@ -178,17 +180,17 @@ const checkCollision = (laser) => {
             </mesh>
           )}
           {rock1 && (
-            <mesh position={[3, 6, -8]}>
+            <mesh position={[3, 3, -8]}>
               <primitive object={rock1.scene} scale={0.4} />
               </mesh>
           )}
           {rock2 && (
-            <mesh position={[-3, 8, -12]}>
+            <mesh position={[-1, 3, -10]}>
               <primitive object={rock2.scene} scale={0.5} />
               </mesh>
           )}
           {rock3 && (
-            <mesh position={[-4, 2, -14]}>
+            <mesh position={[-2, 2, -6]}>
               <primitive object={rock3.scene} scale={0.7} />
               </mesh>
           )}
